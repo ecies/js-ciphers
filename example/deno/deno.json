@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@ecies/ciphers": "npm:@ecies/ciphers@0.1.0",
+    "@noble/ciphers": "npm:@noble/ciphers@1.0.0"
+  }
+}

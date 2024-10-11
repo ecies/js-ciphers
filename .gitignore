@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+dist/
+
+bun.lockb
+deno.lock
+
+.DS_Store
