@@ -3,19 +3,22 @@ import { CipherGCM, createCipheriv, createDecipheriv, DecipherGCM } from "node:c
 
 const AEAD_TAG_LENGTH = 16;
 
-// make `node:crypto`'s aes compatible with `@noble/ciphers`
-const _compat = (
-  algorithm: "aes-256-gcm" | "aes-256-cbc",
+// make `node:crypto`'s ciphers compatible with `@noble/ciphers`
+export const _compat = (
+  algorithm: "aes-256-gcm" | "aes-256-cbc" | "chacha20-poly1305",
   key: Uint8Array,
   nonce: Uint8Array,
   AAD?: Uint8Array
 ): Cipher => {
-  const isAEAD = algorithm === "aes-256-gcm";
-  const tagLength = isAEAD ? AEAD_TAG_LENGTH : 0;
+  const isAEAD = algorithm === "aes-256-gcm" || algorithm === "chacha20-poly1305";
+  const authTagLength = isAEAD ? AEAD_TAG_LENGTH : 0;
+  // authTagLength is necessary for `chacha20-poly1305` before Node v16.17
+  const options = isAEAD ? { authTagLength } : undefined;
 
   const encrypt = (plainText: Uint8Array) => {
-    const cipher = createCipheriv(algorithm, key, nonce);
+    const cipher = createCipheriv(algorithm, key, nonce, options as any);
     if (isAEAD && AAD) {
+      // gcm -> CipherGCM, chacha20-poly1305 -> CipherCCM but the interface is same
       (cipher as CipherGCM).setAAD(AAD);
     }
 
@@ -28,17 +31,17 @@ const _compat = (
   };
 
   const decrypt = (cipherText: Uint8Array) => {
-    const encrypted = cipherText.subarray(0, cipherText.length - tagLength);
-    const tag = cipherText.subarray(cipherText.length - tagLength);
+    const rawCipherText = cipherText.subarray(0, cipherText.length - authTagLength);
+    const tag = cipherText.subarray(cipherText.length - authTagLength);
 
-    const decipher = createDecipheriv(algorithm, key, nonce);
+    const decipher = createDecipheriv(algorithm, key, nonce, options as any);
     if (isAEAD) {
       if (AAD) {
         (decipher as DecipherGCM).setAAD(AAD);
       }
       (decipher as DecipherGCM).setAuthTag(tag);
     }
-    const updated = decipher.update(encrypted);
+    const updated = decipher.update(rawCipherText);
     const finalized = decipher.final();
     return concatBytes(updated, finalized);
   };
@@ -48,9 +51,3 @@ const _compat = (
     decrypt,
   };
 };
-
-export const aes256gcm = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher =>
-  _compat("aes-256-gcm", key, nonce, AAD);
-
-export const aes256cbc = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher =>
-  _compat("aes-256-cbc", key, nonce);
