@@ -1,0 +1,8 @@
+{
+  "name": "runtime-example",
+  "main": "main.js",
+  "type": "module",
+  "dependencies": {
+    "@ecies/ciphers": "file:.."
+  }
+}
