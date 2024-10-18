@@ -1,9 +1,17 @@
-# example
+# runtime-example
+
+## Install
+
+Run with `bun install` (or `pnpm install`)
 
 ## bun
 
-Run with `bun install && bun run index.ts`
+Run with `bun run main.js`
 
 ## deno
 
-Run with `deno run main.ts`
+Run with `deno run --allow-read main.js`
+
+## node
+
+Run with `node main.js`

@@ -22,7 +22,7 @@ jobs:
 
       - run: pnpm install && pnpm test -- --bail 1
 
-      - run: pnpm run build && npm publish --access public
+      - run: pnpm build && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
