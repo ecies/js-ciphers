@@ -49,13 +49,14 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "test:browser": "cd tests-browser && pnpm test"
   },
   "peerDependencies": {
     "@noble/ciphers": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.8.4",
+    "@types/node": "^22.8.6",
     "@vitest/coverage-v8": "^2.1.4",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
