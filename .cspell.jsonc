@@ -1,0 +1,16 @@
+{
+  "words": [
+    "chacha",
+    "ecies",
+    "hchacha",
+    "xchacha"
+  ],
+  "ignorePaths": [
+    ".git",
+    ".github",
+    ".gitignore",
+    ".cspell.jsonc",
+    "LICENSE",
+    "package.json"
+  ]
+}
