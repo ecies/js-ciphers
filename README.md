@@ -7,11 +7,13 @@
 
 Node/Pure JavaScript symmetric ciphers adapter.
 
-On browsers (or deno), it'll use [`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers)'s implementation for compatibility.
+On browsers (or React Native, deno), it'll use [`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers)'s implementation for compatibility.
 
 On node (or bun), it'll use [`node:crypto`](https://nodejs.org/api/crypto.html#cryptocreatecipherivalgorithm-key-iv-options)'s implementation for efficiency.
 
 > [!NOTE]
+> You may need to polyfill [`crypto.getRandomValues`](https://github.com/LinusU/react-native-get-random-values) for React Native.
+>
 > There are some limitations, see [Known limitations](#known-limitations) below.
 
 Check the [example](./example/) folder for bun/deno usage.
