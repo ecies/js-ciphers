@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.2.1
+
+- Add React Native package exports
+
 ## 0.2.0
 
 - Add xchacha20-poly1305 support
