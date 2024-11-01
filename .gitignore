@@ -2,9 +2,12 @@ node_modules/
 coverage/
 dist/
 
+.DS_Store
+
 # example
 example/bun.lockb
 example/deno.lock
 example/pnpm-lock.yaml
 
-.DS_Store
+# browser tests
+tests-browser/pnpm-lock.yaml

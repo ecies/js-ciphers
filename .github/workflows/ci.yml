@@ -31,6 +31,25 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Set up browser tests
+        working-directory: tests-browser
+        run: pnpm install && pnpm exec playwright install chromium firefox
+
+      - name: Install webkit browser on macos
+        working-directory: tests-browser
+        if: matrix.os == 'macos-latest'
+        run: pnpm exec playwright install
+
+      - name: Run browser tests (chromium, firefox)
+        run: |
+          pnpm test:browser
+          pnpm test:browser -- --browser=firefox
+
+      - name: Run browser tests (webkit)
+        if: matrix.os == 'macos-latest'
+        run: |
+          pnpm test:browser -- --browser=webkit
+
   check-runtimes:
     runs-on: ubuntu-latest
     steps:
@@ -50,8 +69,8 @@ jobs:
         with:
           deno-version: v2.x
 
-      - run: pnpm install && pnpm build
-      - run: cd example && pnpm install
-      - run: bun run example/main.js
-      - run: deno run --allow-read example/main.js
-      - run: node example/main.js
+      - run: pnpm install && pnpm build && cd example && pnpm install
+
+      - name: check main.js
+        run: |
+          ./scripts/check-runtime.sh example/main.js
