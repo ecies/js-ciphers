@@ -74,3 +74,8 @@ jobs:
       - name: check main.js
         run: |
           ./scripts/check-runtime.sh example/main.js
+
+      - name: check main.js on mininum supported node version
+        run: |
+          curl -sL https://nodejs.org/download/release/v16.0.0/node-v16.0.0-linux-x64.tar.gz | tar -xz
+          ./node-v16.0.0-linux-x64/bin/node example/main.js && rm -rf node-v16.0.0-linux-x64

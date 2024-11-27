@@ -3,14 +3,17 @@
     "chacha",
     "ecies",
     "hchacha",
+    "webcrypto",
     "xchacha"
   ],
   "ignorePaths": [
+    "LICENSE",
     ".git",
     ".github",
     ".gitignore",
     ".cspell.jsonc",
-    "LICENSE",
-    "package.json"
+    "settings.json",
+    "package.json",
+    "pnpm-lock.yaml"
   ]
 }

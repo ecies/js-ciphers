@@ -29,10 +29,8 @@ export const _compat = (
 
     const updated = cipher.update(plainText);
     const finalized = cipher.final();
-    if (isAEAD) {
-      return concatBytes(updated, finalized, (cipher as CipherGCM).getAuthTag());
-    }
-    return concatBytes(updated, finalized);
+    const tag = isAEAD ? (cipher as CipherGCM).getAuthTag() : new Uint8Array(0);
+    return concatBytes(updated, finalized, tag);
   };
 
   const decrypt = (cipherText: Uint8Array) => {

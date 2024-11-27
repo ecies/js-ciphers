@@ -2,7 +2,7 @@
  * Copied from `@noble/ciphers/chacha`
  */
 // prettier-ignore
-export const _hchacha = (
+export const _hchacha20 = (
   s: Uint32Array, k: Uint32Array, i: Uint32Array, o32: Uint32Array
 ): void => {
   let x00 = s[0], x01 = s[1], x02 = s[2], x03 = s[3],

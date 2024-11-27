@@ -5,6 +5,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "tests-browser/**"],
     coverage: {
       include: ["src/**"],
+      exclude: ["src/index.ts"],
       enabled: true,
       provider: "v8",
     },

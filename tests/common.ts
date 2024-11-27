@@ -7,12 +7,14 @@ const encoder = new TextEncoder();
 export const hello = encoder.encode(TEXT);
 
 export function testRandom(data: Uint8Array, noble: Cipher, compat: Cipher) {
+  const encrypted = noble.encrypt(data);
+  const compatEncrypted = compat.encrypt(data);
   // same encryption
-  expect(noble.encrypt(data)).toStrictEqual(compat.encrypt(data));
+  expect(encrypted).toStrictEqual(compatEncrypted);
   // noble encrypts, compat decrypts
-  expect(compat.decrypt(noble.encrypt(data))).toStrictEqual(data);
+  expect(compat.decrypt(encrypted)).toStrictEqual(data);
   // noble decrypts, compat encrypts
-  expect(noble.decrypt(compat.encrypt(data))).toStrictEqual(data);
+  expect(noble.decrypt(compatEncrypted)).toStrictEqual(data);
 }
 
 export function testKnown(
