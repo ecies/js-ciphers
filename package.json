@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/ecies/js-ciphers.git"
   },
-  "version": "0.2.1",
+  "version": "0.2.2",
   "engines": {
     "node": ">=16",
     "bun": ">=1",
@@ -22,12 +22,15 @@
     "cipher",
     "aes",
     "chacha",
+    "chacha20",
+    "chacha20poly1305",
     "xchacha20",
     "xchacha20poly1305"
   ],
   "files": [
     "dist"
   ],
+  "main": "dist/index.js",
   "exports": {
     ".": null,
     "./aes": {
@@ -56,10 +59,10 @@
     "@noble/ciphers": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.8.6",
-    "@vitest/coverage-v8": "^2.1.4",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@types/node": "^22.10.1",
+    "@vitest/coverage-v8": "^2.1.6",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.6"
   },
-  "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee"
+  "packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387"
 }
