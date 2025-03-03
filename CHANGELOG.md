@@ -3,6 +3,8 @@
 ## 0.2.3
 
 - Use `node:crypto`'s aes implementation on deno
+- Bump dependencies
+- Revamp documentation
 
 ## 0.2.2
 
