@@ -3,6 +3,9 @@ import { CipherGCM, createCipheriv, createDecipheriv, DecipherGCM } from "node:c
 
 const AEAD_TAG_LENGTH = 16;
 
+// @ts-ignore: only necessary for deno
+const IS_DENO = globalThis.Deno !== undefined;
+
 /**
  * make `node:crypto`'s ciphers compatible with `@noble/ciphers`.
  *
@@ -44,6 +47,12 @@ export const _compat = (
       }
       (decipher as DecipherGCM).setAuthTag(tag);
     }
+
+    /* v8 ignore next 3 */
+    if (!isAEAD && IS_DENO) {
+      decipher.setAutoPadding(false); // See: https://github.com/denoland/deno/issues/28381
+    }
+
     const updated = decipher.update(rawCipherText);
     const finalized = decipher.final();
     return concatBytes(updated, finalized);
