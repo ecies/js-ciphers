@@ -37,7 +37,7 @@
       "types": "./dist/aes/node.d.ts",
       "browser": "./dist/aes/noble.js",
       "react-native": "./dist/aes/noble.js",
-      "deno": "./dist/aes/noble.js",
+      "deno": "./dist/aes/node.js",
       "bun": "./dist/aes/node.js",
       "default": "./dist/aes/node.js"
     },

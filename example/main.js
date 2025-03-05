@@ -38,9 +38,7 @@ const ciphers = [
 for (const { keyLength, nonceLength, callback, aad } of ciphers) {
   const key = randomBytes(keyLength);
   const nonce = randomBytes(nonceLength);
+  console.log(`${callback.name} (nonce length ${nonce.length}) decrypted:`);
   const cipher = callback(key, nonce, aad);
-  console.log(
-    `${callback.name} (nonce length ${nonce.length}) decrypted:`,
-    decoder.decode(cipher.decrypt(cipher.encrypt(msg)))
-  );
+  console.log(decoder.decode(cipher.decrypt(cipher.encrypt(msg))));
 }

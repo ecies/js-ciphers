@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.2.3
+
+- Use `node:crypto`'s aes implementation on deno
+
 ## 0.2.2
 
 - Add `chacha20-poly1305` support
