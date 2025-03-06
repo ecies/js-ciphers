@@ -10,9 +10,8 @@
     "@ecies/ciphers": "file:.."
   },
   "devDependencies": {
-    "@vitest/browser": "^2.1.6",
-    "playwright": "^1.49.0",
-    "vitest": "^2.1.6"
-  },
-  "packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387"
+    "@vitest/browser": "^3.0.7",
+    "playwright": "^1.50.1",
+    "vitest": "^3.0.7"
+  }
 }

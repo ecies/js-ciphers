@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/ecies/js-ciphers.git"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "engines": {
     "node": ">=16",
     "bun": ">=1",
@@ -59,10 +59,10 @@
     "@noble/ciphers": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
-    "@vitest/coverage-v8": "^2.1.6",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.6"
+    "@types/node": "^22.13.9",
+    "@vitest/coverage-v8": "^3.0.7",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
   },
-  "packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387"
+  "packageManager": "pnpm@10.5.2+sha512.da9dc28cd3ff40d0592188235ab25d3202add8a207afbedc682220e4a0029ffbff4562102b9e6e46b4e3f9e8bd53e6d05de48544b0c57d4b0179e22c76d1199b"
 }
