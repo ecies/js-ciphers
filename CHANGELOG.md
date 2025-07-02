@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.2.4
+
+- Bump dependencies
+- Revamp documentation: deno support
+
 ## 0.2.3
 
 - Use `node:crypto`'s aes implementation on deno
