@@ -1,4 +1,4 @@
-import { Cipher, u32, u8 } from "@noble/ciphers/utils";
+import { type Cipher, u8, u32 } from "@noble/ciphers/utils";
 
 import { _compat } from "../_node/compat";
 import { _hchacha20 } from "../_node/hchacha";

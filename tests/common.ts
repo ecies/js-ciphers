@@ -1,6 +1,5 @@
+import type { Cipher } from "@noble/ciphers/utils";
 import { expect } from "vitest";
-
-import { Cipher } from "@noble/ciphers/utils";
 
 const TEXT = "hello world🌍!";
 const encoder = new TextEncoder();

@@ -1,9 +1,8 @@
+import { randomBytes } from "@noble/ciphers/webcrypto";
 import { describe, expect, it } from "vitest";
 
-import { randomBytes } from "@noble/ciphers/webcrypto";
-
-import { xchacha20 as _xchacha20, chacha20 as _chacha20 } from "../../src/chacha/noble";
-import { xchacha20, chacha20 } from "../../src/chacha/node";
+import { chacha20 as _chacha20, xchacha20 as _xchacha20 } from "../../src/chacha/noble";
+import { chacha20, xchacha20 } from "../../src/chacha/node";
 import { hello, testRandom } from "../common";
 
 describe("test random", () => {
