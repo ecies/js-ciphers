@@ -1,13 +1,9 @@
 import { type Cipher, u8, u32 } from "@noble/ciphers/utils";
 
-import { _compat } from "../_node/compat";
-import { _hchacha20 } from "../_node/hchacha";
+import { _compat } from "../_node/compat.js";
+import { _hchacha20 } from "../_node/hchacha.js";
 
-export const xchacha20 = (
-  key: Uint8Array,
-  nonce: Uint8Array,
-  AAD?: Uint8Array
-): Cipher => {
+export const xchacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher => {
   if (nonce.length !== 24) {
     throw new Error("xchacha20's nonce must be 24 bytes");
   }
@@ -22,11 +18,7 @@ export const xchacha20 = (
   return _compat("chacha20-poly1305", u8(subKey), subNonce, AAD);
 };
 
-export const chacha20 = (
-  key: Uint8Array,
-  nonce: Uint8Array,
-  AAD?: Uint8Array
-): Cipher => {
+export const chacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher => {
   if (nonce.length !== 12) {
     throw new Error("chacha20's nonce must be 12 bytes");
   }

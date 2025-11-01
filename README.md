@@ -28,11 +28,12 @@ Otherwise (e.g. browser, react native), it'll use [`@noble/ciphers`](https://git
 >
 > This library is tree-shakeable, unused code will be excluded by bundlers.
 
-Check the [example](./example/) folder for bun/deno usage.
+Check the [example](./example/) folder for more usages.
 
 ## Quick start
 
 ```js
+// example/quick-start.js
 import { aes256gcm } from "@ecies/ciphers/aes";
 import { randomBytes } from "@noble/ciphers/webcrypto";
 
@@ -61,10 +62,10 @@ The API follows `@noble/ciphers`'s API for ease of use, you can check their [exa
 - `xchacha20-poly1305`
   - Nonce is always 24 bytes.
 
-If key is fixed and nonce is less than 16 bytes, avoid randomly generated nonce.
+If key is fixed and nonce is less than 16 bytes, **avoid randomly generated nonce**.
 
 ## Known limitations
 
 - `xchacha20-poly1305` is implemented with pure JS [`hchacha20`](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha#section-2.2) function and `node:crypto`'s `chacha20-poly1305` on node.
-- Currently (Mar 2025), `node:crypto`'s `chacha20-poly1305` is not supported on deno and [bun](https://github.com/oven-sh/bun/issues/8072), `@noble/ciphers`'s implementation is used on both platforms instead.
-- Some old versions of `deno` [do not support](https://github.com/denoland/deno/discussions/17964#discussioncomment-10917259) **indirect** conditional exports. If you use this library to build another library, client code of your library may fall back to the `node:crypto` implementation and not work properly, specifically `aes-256-gcm` (16 bytes nonce) and `chacha20-poly1305`. If you found such a problem, you need to upgrade deno and run with `--conditions deno` (>=2.4.0) or `--unstable-node-conditions deno`(>=2.3.6,<2.4.0).
+- Currently (Nov 2025), `node:crypto`'s `chacha20-poly1305` is neither supported on [deno](https://github.com/denoland/deno/issues/28411) nor [bun](https://github.com/oven-sh/bun/issues/8072), `@noble/ciphers`'s implementation is used on both platforms instead.
+- Some old versions of `deno` [did not support](https://github.com/denoland/deno/discussions/17964#discussioncomment-10917259) **indirect** conditional exports. If you used this library to build another library, client code of your library might have fell back to the `node:crypto` implementation and would not work properly, specifically `aes-256-gcm` (16 bytes nonce) and `chacha20-poly1305`. If you found such a problem, upgrade deno and run with `--conditions deno` (>=2.4.0) or `--unstable-node-conditions deno`(>=2.3.6,<2.4.0).

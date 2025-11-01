@@ -75,6 +75,7 @@ jobs:
       - name: check main.js
         run: |
           ./scripts/check-runtime.sh example/main.js
+          ./scripts/check-runtime.sh example/quick-start.js
 
       - name: check main.js on mininum supported node version
         run: |

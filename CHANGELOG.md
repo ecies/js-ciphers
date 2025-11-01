@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.2.5
+
+- Bump dependencies
+- Prepare for ESM
+
 ## 0.2.4
 
 - Bump dependencies
