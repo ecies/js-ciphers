@@ -1,7 +1,9 @@
+// biome-ignore-all format lint: copied code
+// prettier-ignore
+
 /**
  * Copied from `@noble/ciphers/chacha`
  */
-// prettier-ignore
 export const _hchacha20 = (
   s: Uint32Array, k: Uint32Array, i: Uint32Array, o32: Uint32Array
 ): void => {

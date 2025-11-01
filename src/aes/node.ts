@@ -1,4 +1,4 @@
-import { Cipher } from "@noble/ciphers/utils";
+import type { Cipher } from "@noble/ciphers/utils";
 
 import { _compat } from "../_node/compat";
 

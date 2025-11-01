@@ -1,9 +1,8 @@
+import { concatBytes, hexToBytes } from "@noble/ciphers/utils";
 import { describe, it } from "vitest";
 
-import { concatBytes, hexToBytes } from "@noble/ciphers/utils";
-
-import { xchacha20 as _xchacha20, chacha20 as _chacha20 } from "../../src/chacha/noble";
-import { xchacha20, chacha20 } from "../../src/chacha/node";
+import { chacha20 as _chacha20, xchacha20 as _xchacha20 } from "../../src/chacha/noble";
+import { chacha20, xchacha20 } from "../../src/chacha/node";
 import { testKnown } from "../common";
 
 describe("test known", () => {
