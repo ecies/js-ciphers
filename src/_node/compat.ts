@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: hide type error
 import {
   type CipherGCM,
   createCipheriv,
