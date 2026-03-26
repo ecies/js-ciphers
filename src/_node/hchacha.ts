@@ -1,4 +1,3 @@
-// biome-ignore-all format lint: copied code
 // prettier-ignore
 
 /**

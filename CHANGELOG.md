@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.2.6
+
+- Bump dependencies
+- Bump emitted JavaScript target to es2021
+
 ## 0.2.5
 
 - Bump dependencies
