@@ -4,6 +4,7 @@
 
 - Bump dependencies
 - Bump emitted JavaScript target to es2021
+- Use `node:crypto`'s chacha20-poly1305 implementation on deno (>=2.7.10)
 
 ## 0.2.5
 

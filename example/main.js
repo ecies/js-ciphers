@@ -1,5 +1,5 @@
 import { aes256cbc, aes256gcm } from "@ecies/ciphers/aes";
-import { xchacha20 } from "@ecies/ciphers/chacha";
+import { chacha20, xchacha20 } from "@ecies/ciphers/chacha";
 
 import { randomBytes } from "@noble/ciphers/webcrypto";
 
@@ -26,6 +26,12 @@ const ciphers = [
     nonceLength: 16,
     callback: aes256cbc,
     aad: undefined,
+  },
+  {
+    keyLength: 32,
+    nonceLength: 12,
+    callback: chacha20,
+    aad: randomBytes(16),
   },
   {
     keyLength: 32,
