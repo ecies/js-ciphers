@@ -15,7 +15,7 @@
   "engines": {
     "node": ">=16",
     "bun": ">=1",
-    "deno": ">=2"
+    "deno": ">=2.7.10"
   },
   "keywords": [
     "cryptography",
@@ -45,7 +45,7 @@
       "types": "./dist/chacha/node.d.ts",
       "browser": "./dist/chacha/noble.js",
       "react-native": "./dist/chacha/noble.js",
-      "deno": "./dist/chacha/noble.js",
+      "deno": "./dist/chacha/node.js",
       "bun": "./dist/chacha/noble.js",
       "default": "./dist/chacha/node.js"
     }
