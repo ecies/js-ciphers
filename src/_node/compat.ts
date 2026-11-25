@@ -51,9 +51,17 @@ export const _compat = (
       (decipher as DecipherGCM).setAuthTag(tag);
     }
 
+    // node:crypto's Buffers hold the plaintext, or the unauthenticated plaintext when final()
+    // throws: wipe them once copied, since the caller can only wipe the copy it gets back
     const updated = decipher.update(rawCipherText);
-    const finalized = decipher.final();
-    return concatBytes(updated, finalized);
+    let finalized: Uint8Array | undefined;
+    try {
+      finalized = decipher.final();
+      return concatBytes(updated, finalized);
+    } finally {
+      updated.fill(0);
+      finalized?.fill(0);
+    }
   };
 
   return {
