@@ -52,7 +52,10 @@ export const _compat = (
     }
 
     // node:crypto's Buffers hold the plaintext, or the unauthenticated plaintext when final()
-    // throws: wipe them once copied, since the caller can only wipe the copy it gets back
+    // throws: wipe them once copied, since the caller can only wipe the copy it gets back.
+    // Only the views are wiped, since runtimes pool small Buffers and the memory past a view
+    // may belong to another. Bun 1.2.21's aes-256-cbc update() leaves up to a block of
+    // plaintext there; Bun 1.4.5's doesn't.
     const updated = decipher.update(rawCipherText);
     let finalized: Uint8Array | undefined;
     try {

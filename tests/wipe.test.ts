@@ -138,8 +138,12 @@ describe("xchacha20 wipes its subkey after each call (#13)", () => {
     expect(cipher.decrypt(sealed)).toStrictEqual(message);
     expect(cipher.encrypt(message)).toStrictEqual(sealed);
     expect(cipher.decrypt(sealed)).toStrictEqual(message);
+    // and when the tag check fails
+    const forged = sealed.slice();
+    forged[forged.length - 1] ^= 1;
+    expect(() => cipher.decrypt(forged)).toThrow(tagMismatch);
 
-    expect(hex(keys, "atTheTime")).toEqual([subKey, subKey, subKey, subKey]);
+    expect(hex(keys, "atTheTime")).toEqual([subKey, subKey, subKey, subKey, subKey]);
     expect(hex(keys, "live")).toEqual(zeroed(keys));
   });
 });
