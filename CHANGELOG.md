@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.2.7
+
+- Bump dependencies
+
 ## 0.2.6
 
 - Bump dependencies
