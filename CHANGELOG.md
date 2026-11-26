@@ -3,6 +3,7 @@
 ## 0.2.7
 
 - Bump dependencies
+- Wipe the plaintext Buffers `node:crypto` returns on decryption, and xchacha20's subkey after each call
 
 ## 0.2.6
 

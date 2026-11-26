@@ -52,4 +52,17 @@ describe("test random", () => {
 
     testError(xchacha20, 12, "xchacha20's nonce must be 24 bytes");
   });
+
+  it("reads xchacha20's key and nonce at each call, as noble does", () => {
+    const key = randomBytes();
+    const nonce = randomBytes(24);
+    const noble = _xchacha20(key, nonce);
+    const compat = xchacha20(key, nonce);
+
+    // both halves of the nonce: the first 16 bytes go into the subkey, the last 8 into the
+    // chacha20 nonce
+    key.set(randomBytes());
+    nonce.set(randomBytes(24));
+    expect(compat.encrypt(hello)).toStrictEqual(noble.encrypt(hello));
+  });
 });
