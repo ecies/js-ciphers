@@ -3,6 +3,7 @@
     "chacha",
     "ecies",
     "hchacha",
+    "keystream",
     "subkey",
     "webcrypto",
     "xchacha"

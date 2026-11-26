@@ -50,6 +50,8 @@ console.log("decrypted:", decoder.decode(cipher.decrypt(cipher.encrypt(msg))));
 
 The API follows `@noble/ciphers`'s API for ease of use, you can check their [examples](https://github.com/paulmillr/noble-ciphers#examples) as well.
 
+As in `@noble/ciphers`, the key and nonce must be `Uint8Array`s, and a cipher encrypts only once: make a new one, with a new nonce, for each message. It can decrypt any number of times.
+
 ## Supported ciphers
 
 - `aes-256-gcm`
