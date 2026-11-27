@@ -56,9 +56,10 @@ export const _encryptOnce = (
 /**
  * make `node:crypto`'s ciphers compatible with `@noble/ciphers`.
  *
- * `Cipher`'s interface is the same for both `aes-256-gcm` and `chacha20-poly1305`,
- * albeit the latter is one of `CipherCCMTypes`.
- * Interestingly, whether to set `plaintextLength` or not, or which value to set, has no actual effect.
+ * `aes-256-gcm` and `chacha20-poly1305` have the same AEAD methods, so both are cast to
+ * `CipherGCM` and `DecipherGCM` below. `setAAD` needs no `plaintextLength`: Node uses it only
+ * for CCM, whose CBC-MAC encodes the message's length before the AAD, while GCM and
+ * ChaCha20-Poly1305 authenticate both lengths last, after the ciphertext.
  */
 export const _compat = (
   algorithm: "aes-256-gcm" | "aes-256-cbc" | "chacha20-poly1305",
