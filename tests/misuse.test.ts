@@ -12,7 +12,7 @@ import * as nobleAes from "../src/aes/noble";
 import * as nodeAes from "../src/aes/node";
 import * as nobleChacha from "../src/chacha/noble";
 import * as nodeChacha from "../src/chacha/node";
-import { hello, testRandom } from "./common";
+import { hello, ResizableArrayBuffer, type ResizableBuffer, testRandom } from "./common";
 
 type Make = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array) => Cipher;
 type Case = { name: string; node: Make; noble: Make; nonceLength: number; AEAD: boolean };
@@ -68,6 +68,24 @@ const fromOtherRealm = (bytes: Uint8Array): Uint8Array => {
   copy.set(bytes);
   return copy;
 };
+
+// a copy of bytes in a view over a buffer of its own, which a cut below can take away
+const cuttable = (bytes: Uint8Array): [Uint8Array, ResizableBuffer] => {
+  const buffer = new ResizableArrayBuffer(bytes.length, { maxByteLength: bytes.length });
+  const view = new Uint8Array(buffer, 0, bytes.length);
+  view.set(bytes);
+  return [view, buffer];
+};
+
+// what leaves such a view reading as 0 bytes, though it's still a Uint8Array, and whether
+// noble refuses it as a plaintext: its aes takes an out-of-bounds one as empty
+const cuts: [string, (buffer: ResizableBuffer) => void, boolean][] = [
+  // as postMessage(data, [data.buffer]) to a worker does too
+  ["a detached", (buffer) => buffer.transfer(), true],
+  ["an out-of-bounds", (buffer) => buffer.resize(0), false],
+];
+
+const encryptTwice = "cannot encrypt() twice with the same key and nonce";
 
 describe("rejects a key or nonce that isn't a Uint8Array, as noble does (#20)", () => {
   it.each(cases)("$name", ({ node, noble, nonceLength }) => {
@@ -133,6 +151,17 @@ describe("rejects a plaintext, ciphertext or AAD that isn't a Uint8Array, as nob
         );
       }
     }
+    // checked as types before anything else reads them
+    for (const data of [null, undefined] as unknown as Uint8Array[]) {
+      expect(() => c.node(key, nonce).encrypt(data)).toThrowError(
+        "plaintext must be a Uint8Array"
+      );
+      expect(() => c.noble(key, nonce).encrypt(data)).toThrowError("Uint8Array expected");
+      expect(() => c.node(key, nonce).decrypt(data)).toThrowError(
+        "ciphertext must be a Uint8Array"
+      );
+      expect(() => c.noble(key, nonce).decrypt(data)).toThrowError("Uint8Array expected");
+    }
     if (c.AEAD) {
       // noble checks any AAD but undefined
       const AAD = null as unknown as Uint8Array;
@@ -166,9 +195,83 @@ describe("rejects a plaintext, ciphertext or AAD that isn't a Uint8Array, as nob
   });
 });
 
-describe("encrypts once per cipher, as noble does (#22)", () => {
-  const encryptTwice = "cannot encrypt() twice with the same key and nonce";
+describe("rejects a detached or out-of-bounds plaintext, ciphertext or AAD (#27)", () => {
+  it.each(cases)("$name", (c) => {
+    for (const [label, cut, nobleRefusesPlainText] of cuts) {
+      const key = randomBytes(32);
+      const nonce = randomBytes(c.nonceLength);
 
+      // node:crypto sealed an empty message
+      const [plainText, plainTextBuffer] = cuttable(hello);
+      cut(plainTextBuffer);
+      const compat = c.node(key, nonce);
+      expect(() => compat.encrypt(plainText), `${label} plaintext`).toThrowError(
+        "plaintext is detached or out of bounds"
+      );
+      // and uses the cipher up, as noble does
+      expect(() => compat.encrypt(hello), `${label} plaintext`).toThrowError(encryptTwice);
+      if (nobleRefusesPlainText) {
+        expect(() => c.noble(key, nonce).encrypt(plainText)).toThrowError(/detached/);
+      }
+      // even one whose own values() and byteLength don't tell, as a subclass's needn't
+      const [lax, laxBuffer] = cuttable(hello);
+      Object.defineProperty(lax, "values", { value: () => [].values() });
+      Object.defineProperty(lax, "byteLength", { get: () => hello.length });
+      cut(laxBuffer);
+      expect(() => c.node(key, nonce).encrypt(lax), `${label} plaintext`).toThrowError(
+        "plaintext is detached or out of bounds"
+      );
+
+      const [cipherText, cipherTextBuffer] = cuttable(c.noble(key, nonce).encrypt(hello));
+      cut(cipherTextBuffer);
+      const asCipherText = `${label} ciphertext`;
+      expect(() => c.node(key, nonce).decrypt(cipherText), asCipherText).toThrowError(
+        "ciphertext is detached or out of bounds"
+      );
+      expect(() => c.noble(key, nonce).decrypt(cipherText), asCipherText).toThrowError();
+
+      if (c.AEAD) {
+        // node:crypto took it as no AAD: it sealed under none, and opened what was sealed under
+        // none. Each call reads it, so one cipher is made before the cut and one after.
+        const sealedWithoutAAD = c.noble(key, nonce).encrypt(hello);
+        const [AAD, AADBuffer] = cuttable(randomBytes(8));
+        const madeBefore = c.node(key, nonce, AAD);
+        cut(AADBuffer);
+        const madeAfter = c.node(key, nonce, AAD);
+        const asAAD = `${label} AAD`;
+        const outOfBounds = "AAD is detached or out of bounds";
+        expect(() => madeBefore.encrypt(hello), asAAD).toThrowError(outOfBounds);
+        // and uses the cipher up, as noble does
+        expect(() => madeBefore.encrypt(hello), asAAD).toThrowError(encryptTwice);
+        expect(() => madeBefore.decrypt(sealedWithoutAAD), asAAD).toThrowError(outOfBounds);
+        expect(() => madeAfter.encrypt(hello), asAAD).toThrowError(outOfBounds);
+        const noble = c.noble(key, nonce, AAD);
+        expect(() => noble.encrypt(hello), asAAD).toThrowError(/detached/);
+        expect(() => noble.decrypt(sealedWithoutAAD), asAAD).toThrowError(/detached/);
+      }
+    }
+  });
+
+  it.each(cases)("$name takes an in-bounds empty plaintext and AAD, as noble does", (c) => {
+    const key = randomBytes(32);
+    const nonce = randomBytes(c.nonceLength);
+    const buffer = new ResizableArrayBuffer(8, { maxByteLength: 8 });
+    const tracking = new Uint8Array(buffer); // as long as its buffer, whatever that is
+    buffer.resize(0);
+    const empties: [string, Uint8Array][] = [
+      ["an empty Uint8Array", new Uint8Array(0)],
+      ["an empty view at the end of its buffer", new Uint8Array(8).subarray(8)],
+      ["a length-tracking view whose buffer has shrunk to 0", tracking],
+    ];
+    for (const [label, empty] of empties) {
+      const AAD = c.AEAD ? empty : undefined;
+      const [noble, compat] = [c.noble(key, nonce, AAD), c.node(key, nonce, AAD)];
+      expect(() => testRandom(empty, noble, compat), label).not.toThrow();
+    }
+  });
+});
+
+describe("encrypts once per cipher, as noble does (#22)", () => {
   it.each(cases)("$name refuses a second encrypt(), and keeps decrypting", (c) => {
     const key = randomBytes(32);
     const nonce = randomBytes(c.nonceLength);
