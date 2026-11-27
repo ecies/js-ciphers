@@ -1,5 +1,4 @@
-import { gcm } from "@noble/ciphers/aes";
-import type { Cipher, CipherWithOutput } from "@noble/ciphers/utils";
+import type { CipherWithOutput } from "@noble/ciphers/utils";
 import { randomBytes } from "@noble/ciphers/webcrypto";
 import { describe, expect, it } from "vitest";
 
@@ -53,31 +52,22 @@ describe("test random", () => {
     testCbc();
   });
 
-  it("hands noble an output buffer: cbc writes into it, gcm does what noble's does", () => {
+  it("hands noble an output buffer: cbc writes into it, gcm refuses it", () => {
     // in browsers and React Native; node:crypto's ciphers take no output buffer
     const key = randomBytes(32);
     const nonce = randomBytes(16);
     const sealed = new Uint8Array(32); // 16 bytes of hello, then a block of padding
     const cbc = _aes256cbc(key, nonce) as CipherWithOutput;
-    const returned = cbc.encrypt(hello, sealed);
-    // noble's cbc returns the output buffer, except 1.1.1's, which returns a view of it
-    expect(returned.buffer).toBe(sealed.buffer);
-    expect(returned).toStrictEqual(sealed);
+    expect(cbc.encrypt(hello, sealed)).toBe(sealed);
     expect(aes256cbc(key, nonce).decrypt(sealed)).toStrictEqual(hello);
     const opened = new Uint8Array(32);
     const plainText = cbc.decrypt(sealed, opened);
     expect(plainText.buffer).toBe(opened.buffer);
     expect(plainText).toStrictEqual(hello);
-    // noble's gcm refuses an output buffer from 1.1.2 on, and 1.1.0's and 1.1.1's ignore it
-    const gcmNonce = randomBytes(12);
-    const sealInto = (cipher: Cipher) => {
-      try {
-        return (cipher as CipherWithOutput).encrypt(hello, new Uint8Array(32));
-      } catch (error) {
-        return error;
-      }
-    };
-    expect(sealInto(_aes256gcm(key, gcmNonce))).toStrictEqual(sealInto(gcm(key, gcmNonce)));
+    const gcm = _aes256gcm(key, randomBytes(12)) as CipherWithOutput;
+    expect(() => gcm.encrypt(hello, new Uint8Array(32))).toThrowError(
+      "cipher output not supported"
+    );
   });
 });
 

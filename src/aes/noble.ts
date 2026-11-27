@@ -13,8 +13,7 @@ const only256 = (name: string, key: Uint8Array, cipher: Cipher): Cipher => {
   // noble marks its cipher used before it checks the key's length, so a call that checkKey
   // refuses, before noble's own guard runs, uses the cipher up too
   let encrypted = false;
-  // noble's cbc writes into an output buffer, if given one; its gcm refuses one from 1.1.2 on,
-  // and 1.1.0's and 1.1.1's ignore it
+  // noble's cbc writes into an output buffer, if given one, and its gcm refuses one
   return {
     encrypt: (plainText: Uint8Array, output?: Uint8Array) => {
       if (encrypted) {

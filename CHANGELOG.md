@@ -10,7 +10,7 @@
 - Accept an xchacha20 key or nonce at any byteOffset on Node and Deno
 - Reject a key or nonce that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
 - Refuse a second `encrypt()` on one cipher wherever `node:crypto` is used, as noble does from 1.1.0
-- Require `@noble/ciphers` 1.1.0 or later, so that every runtime refuses a second `encrypt()`
+- Require `@noble/ciphers` 1.1.3 or later, so that every runtime refuses a second `encrypt()` and noble includes its fixes for output buffers
 - Reject an AAD, plaintext or ciphertext that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
 - Reject an `aes256gcm` or `aes256cbc` key that isn't 32 bytes in browsers and React Native, instead of running AES-128 or AES-192
 
