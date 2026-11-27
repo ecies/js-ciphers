@@ -14,16 +14,24 @@ const AEAD_TAG_LENGTH = 16;
 const isBytes = (a: unknown): a is Uint8Array =>
   a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array");
 
-/**
- * reject a key or nonce that isn't a Uint8Array, as noble does: `node:crypto` would read a string
- * as UTF-8, and xchacha20 would read a string's letters as zero bytes.
- */
-export const _checkBytes = (key: Uint8Array, nonce: Uint8Array): void => {
-  if (!isBytes(key)) {
-    throw new Error("key must be a Uint8Array");
+// reject what noble rejects: `node:crypto` would read a string as UTF-8 and another typed array
+// as its bytes, and xchacha20 would read a string key's letters as zero bytes
+const checkBytes = (value: unknown, name: string): void => {
+  if (!isBytes(value)) {
+    throw new Error(`${name} must be a Uint8Array`);
   }
-  if (!isBytes(nonce)) {
-    throw new Error("nonce must be a Uint8Array");
+};
+
+/** reject a key or nonce that isn't a Uint8Array, as noble does when a cipher is made */
+export const _checkBytes = (key: Uint8Array, nonce: Uint8Array): void => {
+  checkBytes(key, "key");
+  checkBytes(nonce, "nonce");
+};
+
+/** reject an AAD that isn't a Uint8Array, as noble does when a cipher is made */
+export const _checkAAD = (AAD?: Uint8Array): void => {
+  if (AAD !== undefined) {
+    checkBytes(AAD, "AAD");
   }
 };
 
@@ -59,12 +67,16 @@ export const _compat = (
   AAD?: Uint8Array
 ): Cipher => {
   _checkBytes(key, nonce);
+  _checkAAD(AAD);
   const isAEAD = algorithm === "aes-256-gcm" || algorithm === "chacha20-poly1305";
   const authTagLength = isAEAD ? AEAD_TAG_LENGTH : 0;
   // authTagLength is necessary for `chacha20-poly1305` before Node v16.17
   const options = isAEAD ? { authTagLength } : undefined;
 
+  // _encryptOnce marks the cipher used first, so a plaintext that isn't a Uint8Array uses it up,
+  // as in noble
   const encrypt = (plainText: Uint8Array) => {
+    checkBytes(plainText, "plaintext");
     const cipher = createCipheriv(algorithm, key, nonce, options as any);
     if (isAEAD && AAD !== undefined) {
       (cipher as CipherGCM).setAAD(AAD);
@@ -77,6 +89,7 @@ export const _compat = (
   };
 
   const decrypt = (cipherText: Uint8Array) => {
+    checkBytes(cipherText, "ciphertext");
     const rawCipherText = cipherText.subarray(0, cipherText.length - authTagLength);
     const tag = cipherText.subarray(cipherText.length - authTagLength);
 

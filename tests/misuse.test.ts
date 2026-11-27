@@ -1,6 +1,6 @@
-// The keys and nonces noble refuses, and a second encrypt(), the node:crypto ciphers refuse
-// too. noble does it in wrapCipher (@noble/ciphers 1.3.0, utils.js:277-330), which browsers,
-// React Native and Bun's chacha get.
+// The keys, nonces, AADs and data noble refuses, and a second encrypt(), the node:crypto ciphers
+// refuse too. noble does it in wrapCipher (@noble/ciphers 1.3.0, utils.js:277-330), which
+// browsers, React Native and Bun's chacha get.
 import { Buffer } from "node:buffer";
 import { runInNewContext } from "node:vm";
 
@@ -15,7 +15,7 @@ import * as nodeChacha from "../src/chacha/node";
 import { hello, testRandom } from "./common";
 
 type Make = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array) => Cipher;
-type Case = { name: string; node: Make; noble: Make; nonceLength: number };
+type Case = { name: string; node: Make; noble: Make; nonceLength: number; AEAD: boolean };
 
 const cases: Case[] = [
   {
@@ -23,24 +23,28 @@ const cases: Case[] = [
     node: nodeAes.aes256gcm,
     noble: nobleAes.aes256gcm,
     nonceLength: 12,
+    AEAD: true,
   },
   {
     name: "aes256cbc",
     node: nodeAes.aes256cbc,
     noble: nobleAes.aes256cbc,
     nonceLength: 16,
+    AEAD: false, // takes no AAD
   },
   {
     name: "chacha20",
     node: nodeChacha.chacha20,
     noble: nobleChacha.chacha20,
     nonceLength: 12,
+    AEAD: true,
   },
   {
     name: "xchacha20",
     node: nodeChacha.xchacha20,
     noble: nobleChacha.xchacha20,
     nonceLength: 24,
+    AEAD: true,
   },
 ];
 
@@ -100,6 +104,68 @@ describe("rejects a key or nonce that isn't a Uint8Array, as noble does (#20)", 
   });
 });
 
+describe("rejects a plaintext, ciphertext or AAD that isn't a Uint8Array, as noble does (#24)", () => {
+  it.each(cases)("$name", (c) => {
+    const key = randomBytes(32);
+    const nonce = randomBytes(c.nonceLength);
+    for (const [label, data] of notBytes(16)) {
+      const asPlainText = `${label} as the plaintext`;
+      const asCipherText = `${label} as the ciphertext`;
+      expect(() => c.node(key, nonce).encrypt(data), asPlainText).toThrowError(
+        "plaintext must be a Uint8Array"
+      );
+      expect(() => c.noble(key, nonce).encrypt(data), asPlainText).toThrowError(
+        "Uint8Array expected"
+      );
+      expect(() => c.node(key, nonce).decrypt(data), asCipherText).toThrowError(
+        "ciphertext must be a Uint8Array"
+      );
+      expect(() => c.noble(key, nonce).decrypt(data), asCipherText).toThrowError(
+        "Uint8Array expected"
+      );
+      if (c.AEAD) {
+        // when the cipher is made
+        expect(() => c.node(key, nonce, data), `${label} as the AAD`).toThrowError(
+          "AAD must be a Uint8Array"
+        );
+        expect(() => c.noble(key, nonce, data), `${label} as the AAD`).toThrowError(
+          "Uint8Array expected"
+        );
+      }
+    }
+    if (c.AEAD) {
+      // noble checks any AAD but undefined
+      const AAD = null as unknown as Uint8Array;
+      expect(() => c.node(key, nonce, AAD)).toThrowError("AAD must be a Uint8Array");
+      expect(() => c.noble(key, nonce, AAD)).toThrowError("Uint8Array expected");
+    }
+  });
+
+  it.each(cases)("$name takes a Buffer, or a Uint8Array from another realm", (c) => {
+    const key = randomBytes(32);
+    const nonce = randomBytes(c.nonceLength);
+    const AAD = c.AEAD ? randomBytes(8) : undefined;
+    const sealed = c.noble(key, nonce, AAD).encrypt(hello);
+    const wraps = [(bytes: Uint8Array) => Buffer.from(bytes), fromOtherRealm];
+    for (const wrap of wraps) {
+      const wrappedAAD = AAD && wrap(AAD);
+      expect(c.node(key, nonce, wrappedAAD).encrypt(wrap(hello))).toStrictEqual(sealed);
+      expect(c.node(key, nonce, wrappedAAD).decrypt(wrap(sealed))).toStrictEqual(hello);
+      expect(c.noble(key, nonce, wrappedAAD).encrypt(wrap(hello))).toStrictEqual(sealed);
+      expect(c.noble(key, nonce, wrappedAAD).decrypt(wrap(sealed))).toStrictEqual(hello);
+    }
+  });
+
+  it("aes256cbc ignores its AAD, as noble's cbc takes none", () => {
+    const key = randomBytes(32);
+    const nonce = randomBytes(16);
+    const notAAD = "not bytes" as unknown as Uint8Array;
+    const sealed = nobleAes.aes256cbc(key, nonce, notAAD).encrypt(hello);
+    expect(nodeAes.aes256cbc(key, nonce, notAAD).encrypt(hello)).toStrictEqual(sealed);
+    expect(nodeAes.aes256cbc(key, nonce, notAAD).decrypt(sealed)).toStrictEqual(hello);
+  });
+});
+
 describe("encrypts once per cipher, as noble does (#22)", () => {
   const encryptTwice = "cannot encrypt() twice with the same key and nonce";
 
@@ -125,11 +191,36 @@ describe("encrypts once per cipher, as noble does (#22)", () => {
 
   it.each(cases)("$name counts an encrypt() that throws, as noble does", (c) => {
     // noble marks the cipher used before it checks the data (utils.js:311-313 in 1.3.0); here
-    // node:crypto, or xchacha20's own check, refuses the 16-byte key
+    // node:crypto, or xchacha20's own check, refuses the 16-byte key, and in browsers aes's
+    // checkKey or noble's chacha does
     const compat = c.node(randomBytes(16), randomBytes(c.nonceLength));
     expect(() => compat.encrypt(hello)).toThrowError(
       /Invalid key length|key must be 32 bytes/
     );
     expect(() => compat.encrypt(hello)).toThrowError(encryptTwice);
+    const noble = c.noble(randomBytes(16), randomBytes(c.nonceLength));
+    expect(() => noble.encrypt(hello)).toThrowError(
+      /key must be 32 bytes|invalid 32-byte key/
+    );
+    expect(() => noble.encrypt(hello)).toThrowError(
+      "cannot encrypt() twice with same key + nonce"
+    );
+  });
+
+  it.each(cases)("$name counts an encrypt() whose plaintext isn't a Uint8Array", (c) => {
+    // noble checks the data after it marks the cipher used (utils.js:311-314 in 1.3.0)
+    const key = randomBytes(32);
+    const nonce = randomBytes(c.nonceLength);
+    const compat = c.node(key, nonce);
+    const noble = c.noble(key, nonce);
+    const notPlainText = "hello" as unknown as Uint8Array;
+    expect(() => compat.encrypt(notPlainText)).toThrowError(
+      "plaintext must be a Uint8Array"
+    );
+    expect(() => compat.encrypt(hello)).toThrowError(encryptTwice);
+    expect(() => noble.encrypt(notPlainText)).toThrowError("Uint8Array expected");
+    expect(() => noble.encrypt(hello)).toThrowError(
+      "cannot encrypt() twice with same key + nonce"
+    );
   });
 });

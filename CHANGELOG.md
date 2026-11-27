@@ -11,6 +11,8 @@
 - Reject a key or nonce that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
 - Refuse a second `encrypt()` on one cipher wherever `node:crypto` is used, as noble does from 1.1.0
 - Require `@noble/ciphers` 1.1.0 or later, so that every runtime refuses a second `encrypt()`
+- Reject an AAD, plaintext or ciphertext that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
+- Reject an `aes256gcm` or `aes256cbc` key that isn't 32 bytes in browsers and React Native, instead of running AES-128 or AES-192
 
 ## 0.2.6
 

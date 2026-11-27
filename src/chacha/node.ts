@@ -1,6 +1,6 @@
 import { type Cipher, u8, u32 } from "@noble/ciphers/utils";
 
-import { _checkBytes, _compat, _encryptOnce } from "../_node/compat.js";
+import { _checkAAD, _checkBytes, _compat, _encryptOnce } from "../_node/compat.js";
 import { _hchacha20 } from "../_node/hchacha.js";
 
 export const xchacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher => {
@@ -8,6 +8,7 @@ export const xchacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array):
   if (nonce.length !== 24) {
     throw new Error("xchacha20's nonce must be 24 bytes");
   }
+  _checkAAD(AAD); // here, since _compat, which checks the data too, runs only at each call
   // the subkey decrypts the message on its own, so each call derives one and wipes it once the
   // cipher is done with it; like noble, each call checks and reads the key and the whole nonce
   // afresh, since a view over a resizable or detached buffer can change length after construction
