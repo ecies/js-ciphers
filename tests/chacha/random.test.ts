@@ -5,17 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { chacha20 as _chacha20, xchacha20 as _xchacha20 } from "../../src/chacha/noble";
 import { chacha20, xchacha20 } from "../../src/chacha/node";
-import { hello, testRandom } from "../common";
-
-// ES2024's resizable ArrayBuffer, which the es2021 lib in tsconfig.json doesn't declare
-type ResizableBuffer = ArrayBuffer & {
-  resize(byteLength: number): void;
-  transfer(): ArrayBuffer;
-};
-const ResizableArrayBuffer = ArrayBuffer as unknown as new (
-  byteLength: number,
-  options: { maxByteLength: number }
-) => ResizableBuffer;
+import { hello, ResizableArrayBuffer, type ResizableBuffer, testRandom } from "../common";
 
 describe("test random", () => {
   function test(

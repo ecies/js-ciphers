@@ -22,6 +22,19 @@ const checkBytes = (value: unknown, name: string): void => {
   }
 };
 
+// a view whose buffer has been detached, by a transfer to a worker say, or has shrunk below it
+// reads as 0 bytes, so `node:crypto` would take it as empty, where noble throws on a detached
+// one. The typed arrays' own values() throws on such a view, in V8 and JavaScriptCore alike,
+// and on no other. It's called directly, and on every view, since a subclass may override
+// values() or byteLength.
+const checkInBounds = (value: Uint8Array, name: string): void => {
+  try {
+    Uint8Array.prototype.values.call(value);
+  } catch {
+    throw new Error(`${name} is detached or out of bounds`);
+  }
+};
+
 /** reject a key or nonce that isn't a Uint8Array, as noble does when a cipher is made */
 export const _checkBytes = (key: Uint8Array, nonce: Uint8Array): void => {
   checkBytes(key, "key");
@@ -74,10 +87,19 @@ export const _compat = (
   // authTagLength is necessary for `chacha20-poly1305` before Node v16.17
   const options = isAEAD ? { authTagLength } : undefined;
 
-  // _encryptOnce marks the cipher used first, so a plaintext that isn't a Uint8Array uses it up,
-  // as in noble
+  // each call reads the data and the AAD afresh, so each call checks them
+  const checkData = (data: Uint8Array, name: string) => {
+    checkBytes(data, name);
+    checkInBounds(data, name);
+    if (isAEAD && AAD !== undefined) {
+      checkInBounds(AAD, "AAD");
+    }
+  };
+
+  // _encryptOnce marks the cipher used first, so a plaintext or AAD that checkData refuses uses
+  // it up, as in noble
   const encrypt = (plainText: Uint8Array) => {
-    checkBytes(plainText, "plaintext");
+    checkData(plainText, "plaintext");
     const cipher = createCipheriv(algorithm, key, nonce, options as any);
     if (isAEAD && AAD !== undefined) {
       (cipher as CipherGCM).setAAD(AAD);
@@ -90,7 +112,7 @@ export const _compat = (
   };
 
   const decrypt = (cipherText: Uint8Array) => {
-    checkBytes(cipherText, "ciphertext");
+    checkData(cipherText, "ciphertext");
     const rawCipherText = cipherText.subarray(0, cipherText.length - authTagLength);
     const tag = cipherText.subarray(cipherText.length - authTagLength);
 

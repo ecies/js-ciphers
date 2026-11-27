@@ -4,17 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { aes256cbc as _aes256cbc, aes256gcm as _aes256gcm } from "../../src/aes/noble";
 import { aes256cbc, aes256gcm } from "../../src/aes/node";
-import { hello, testRandom } from "../common";
-
-// ES2024's resizable ArrayBuffer, which the es2021 lib in tsconfig.json doesn't declare
-type ResizableBuffer = ArrayBuffer & {
-  resize(byteLength: number): void;
-  transfer(): ArrayBuffer;
-};
-const ResizableArrayBuffer = ArrayBuffer as unknown as new (
-  byteLength: number,
-  options: { maxByteLength: number }
-) => ResizableBuffer;
+import { hello, ResizableArrayBuffer, type ResizableBuffer, testRandom } from "../common";
 
 const ciphers = [
   { name: "aes256gcm", noble: _aes256gcm, node: aes256gcm, nonceLength: 12 },
