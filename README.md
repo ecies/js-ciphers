@@ -50,7 +50,7 @@ console.log("decrypted:", decoder.decode(cipher.decrypt(cipher.encrypt(msg))));
 
 The API follows `@noble/ciphers`'s API for ease of use, you can check their [examples](https://github.com/paulmillr/noble-ciphers#examples) as well.
 
-As in `@noble/ciphers`, the key and nonce must be `Uint8Array`s, and a cipher encrypts only once: make a new one, with a new nonce, for each message. It can decrypt any number of times.
+As in `@noble/ciphers`, the key, nonce, AAD, plaintext and ciphertext must be `Uint8Array`s, and a cipher encrypts only once: make a new one, with a new nonce, for each message. It can decrypt any number of times. Every cipher takes only a 32-byte key, so `aes256gcm` and `aes256cbc` always run AES-256.
 
 ## Supported ciphers
 
@@ -69,5 +69,5 @@ If key is fixed and nonce is less than 16 bytes, **avoid randomly generated nonc
 ## Known limitations
 
 - `xchacha20-poly1305` is implemented with pure JS [`hchacha20`](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha#section-2.2) function and `node:crypto`'s `chacha20-poly1305` on node/deno.
-- Currently (Apr 2026), `node:crypto`'s `chacha20-poly1305` is not supported on [bun](https://github.com/oven-sh/bun/issues/8072), `@noble/ciphers`'s implementation is used instead. From deno 2.7.10, `node:crypto`'s `chacha20-poly1305` is [supported](https://github.com/denoland/deno/issues/28411). Please upgrade deno to use native implementation for better performance.
+- Currently (Nov 2026), `node:crypto`'s `chacha20-poly1305` is not supported on [bun](https://github.com/oven-sh/bun/issues/8072), `@noble/ciphers`'s implementation is used instead. From deno 2.7.10, `node:crypto`'s `chacha20-poly1305` is [supported](https://github.com/denoland/deno/issues/28411). Please upgrade deno to use native implementation for better performance.
 - Some old versions of `deno` [did not support](https://github.com/denoland/deno/discussions/17964#discussioncomment-10917259) **indirect** conditional exports. For example, if a library uses `@ecies/ciphers`, client code of that library might fall back to the `node:crypto` implementation and would not work properly, specifically `aes-256-gcm` and `chacha20-poly1305`. If you found such a problem, upgrade deno and run with `--conditions deno` (>=2.4.0) or `--unstable-node-conditions deno`(>=2.3.6,<2.4.0).
