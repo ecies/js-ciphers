@@ -7,31 +7,15 @@ import {
 } from "node:crypto";
 import { type Cipher, concatBytes } from "@noble/ciphers/utils";
 
-const AEAD_TAG_LENGTH = 16;
+import { _checkInBounds as checkInBounds, _isBytes as isBytes } from "../_bytes.js";
 
-// noble's isBytes (@noble/ciphers 1.3.0, utils.js:39-41), which utils exports only from 1.3.0:
-// a Buffer passes, and so does a Uint8Array from another realm
-const isBytes = (a: unknown): a is Uint8Array =>
-  a instanceof Uint8Array || (ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array");
+const AEAD_TAG_LENGTH = 16;
 
 // reject what noble rejects: `node:crypto` would read a string as UTF-8 and another typed array
 // as its bytes, and xchacha20 would read a string key's letters as zero bytes
 const checkBytes = (value: unknown, name: string): void => {
   if (!isBytes(value)) {
     throw new Error(`${name} must be a Uint8Array`);
-  }
-};
-
-// a view whose buffer has been detached, by a transfer to a worker say, or has shrunk below it
-// reads as 0 bytes, so `node:crypto` would take it as empty, where noble throws on a detached
-// one. The typed arrays' own values() throws on such a view, in V8 and JavaScriptCore alike,
-// and on no other. It's called directly, and on every view, since a subclass may override
-// values() or byteLength.
-const checkInBounds = (value: Uint8Array, name: string): void => {
-  try {
-    Uint8Array.prototype.values.call(value);
-  } catch {
-    throw new Error(`${name} is detached or out of bounds`);
   }
 };
 

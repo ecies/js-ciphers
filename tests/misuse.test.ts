@@ -77,12 +77,11 @@ const cuttable = (bytes: Uint8Array): [Uint8Array, ResizableBuffer] => {
   return [view, buffer];
 };
 
-// what leaves such a view reading as 0 bytes, though it's still a Uint8Array, and whether
-// noble refuses it as a plaintext: its aes takes an out-of-bounds one as empty
-const cuts: [string, (buffer: ResizableBuffer) => void, boolean][] = [
+// what leaves such a view reading as 0 bytes, though it's still a Uint8Array
+const cuts: [string, (buffer: ResizableBuffer) => void][] = [
   // as postMessage(data, [data.buffer]) to a worker does too
-  ["a detached", (buffer) => buffer.transfer(), true],
-  ["an out-of-bounds", (buffer) => buffer.resize(0), false],
+  ["a detached", (buffer) => buffer.transfer()],
+  ["an out-of-bounds", (buffer) => buffer.resize(0)],
 ];
 
 const encryptTwice = "cannot encrypt() twice with the same key and nonce";
@@ -197,7 +196,7 @@ describe("rejects a plaintext, ciphertext or AAD that isn't a Uint8Array, as nob
 
 describe("rejects a detached or out-of-bounds plaintext, ciphertext or AAD (#27)", () => {
   it.each(cases)("$name", (c) => {
-    for (const [label, cut, nobleRefusesPlainText] of cuts) {
+    for (const [label, cut] of cuts) {
       const key = randomBytes(32);
       const nonce = randomBytes(c.nonceLength);
 
@@ -210,9 +209,12 @@ describe("rejects a detached or out-of-bounds plaintext, ciphertext or AAD (#27)
       );
       // and uses the cipher up, as noble does
       expect(() => compat.encrypt(hello), `${label} plaintext`).toThrowError(encryptTwice);
-      if (nobleRefusesPlainText) {
-        expect(() => c.noble(key, nonce).encrypt(plainText)).toThrowError(/detached/);
-      }
+      // browsers and React Native refuse it too: chacha with noble's own error, and aes with
+      // this one, since noble's aes took an out-of-bounds one as empty (#29)
+      const nobleCipher = c.noble(key, nonce);
+      expect(() => nobleCipher.encrypt(plainText), `${label} plaintext`).toThrowError(
+        /detached/
+      );
       // even one whose own values() and byteLength don't tell, as a subclass's needn't
       const [lax, laxBuffer] = cuttable(hello);
       Object.defineProperty(lax, "values", { value: () => [].values() });
