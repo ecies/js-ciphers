@@ -8,6 +8,9 @@
 - Reject an xchacha20 key that isn't 32 bytes on Node and Deno, as noble does
 - Reject an xchacha20 nonce that has stopped being 24 bytes since construction on Node and Deno, as noble does
 - Accept an xchacha20 key or nonce at any byteOffset on Node and Deno
+- Reject a key or nonce that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
+- Refuse a second `encrypt()` on one cipher wherever `node:crypto` is used, as noble does from 1.1.0
+- Require `@noble/ciphers` 1.1.0 or later, so that every runtime refuses a second `encrypt()`
 
 ## 0.2.6
 

@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@noble/ciphers':
-        specifier: ^1.0.0
+        specifier: ^1.1.0
         version: 1.3.0
     devDependencies:
       '@biomejs/biome':

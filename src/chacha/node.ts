@@ -1,9 +1,10 @@
 import { type Cipher, u8, u32 } from "@noble/ciphers/utils";
 
-import { _compat } from "../_node/compat.js";
+import { _checkBytes, _compat, _encryptOnce } from "../_node/compat.js";
 import { _hchacha20 } from "../_node/hchacha.js";
 
 export const xchacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher => {
+  _checkBytes(key, nonce);
   if (nonce.length !== 24) {
     throw new Error("xchacha20's nonce must be 24 bytes");
   }
@@ -33,13 +34,15 @@ export const xchacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array):
     }
   };
 
+  // each call makes a chacha20 cipher of its own, so the guard goes here
   return {
-    encrypt: (plainText: Uint8Array) => withSubKey((cipher) => cipher.encrypt(plainText)),
+    encrypt: _encryptOnce((plainText) => withSubKey((cipher) => cipher.encrypt(plainText))),
     decrypt: (cipherText: Uint8Array) => withSubKey((cipher) => cipher.decrypt(cipherText)),
   };
 };
 
 export const chacha20 = (key: Uint8Array, nonce: Uint8Array, AAD?: Uint8Array): Cipher => {
+  _checkBytes(key, nonce); // before reading the nonce's length, as noble does
   if (nonce.length !== 12) {
     throw new Error("chacha20's nonce must be 12 bytes");
   }
