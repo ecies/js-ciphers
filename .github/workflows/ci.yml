@@ -72,6 +72,13 @@ jobs:
 
       - run: pnpm install && pnpm build && cd example && pnpm install
 
+      # the aes tests on Bun, which runs both paths on JavaScriptCore. The others need
+      # chacha20-poly1305, which its node:crypto lacks, or vitest's vi.hoisted.
+      # warm.test.ts goes first, on its own, for the reason in its comment
+      - run: |
+          bun test ./tests/aes/warm.test.ts
+          bun test tests/aes
+
       - run: deno task test
 
       - name: check main.js

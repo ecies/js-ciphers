@@ -14,6 +14,7 @@
 - Reject an AAD, plaintext or ciphertext that isn't a `Uint8Array` wherever `node:crypto` is used, as noble does
 - Reject an AAD or plaintext whose buffer has been detached, or has shrunk below it, wherever `node:crypto` is used, instead of reading it as empty
 - Reject an `aes256gcm` or `aes256cbc` key that isn't 32 bytes in browsers and React Native, instead of running AES-128 or AES-192
+- Reject an `aes256gcm` or `aes256cbc` plaintext whose buffer has shrunk below it in browsers and React Native, instead of encrypting it as empty
 
 ## 0.2.6
 
